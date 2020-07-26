@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Todo;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * TODO項目コントローラー
@@ -22,7 +23,9 @@ class TodoController extends Controller
         logger()->debug('$request->user():' . $request->user());
 
         // ユーザーIDに一致するレコードを取得
-        $data = Todo::where('user_id', $request->user()->id)->orderByRaw('limit_at is null asc, limit_at asc, created_at desc')->get();
+        $data = Todo::where('user_id', $request->user()->id)
+            ->orderByRaw('limit_at is null asc, limit_at asc, created_at desc')
+            ->get();
         return $data;
     }
 
@@ -93,6 +96,7 @@ class TodoController extends Controller
      */
     public function update(Request $request, $id)
     {
+        Log::info('message');
         logger()->info('TodoController->update()');
         logger()->debug($request);
 

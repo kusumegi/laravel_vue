@@ -1,41 +1,48 @@
 <template>
-    <div>
-        <div class="main-container">
-            <h2>新規ユーザー登録</h2>
-            <v-form ref="form" v-model="valid" :lazy-validation="lazy">
-                <v-text-field
-                    v-model="form.name"
-                    :rules="nameRules"
-                    label="お名前"
-                    required
-                    autocomplete="no"
-                ></v-text-field>
-                <v-text-field
-                    v-model="form.email"
-                    :rules="emailRules"
-                    label="メールアドレス"
-                    required
-                    autocomplete="no"
-                ></v-text-field>
-                <v-text-field
-                    v-model="form.password"
-                    :rules="passwordRules"
-                    label="パスワード"
-                    required
-                    type="password"
-                    autocomplete="no"
-                ></v-text-field>
-                <v-text-field
-                    v-model="form.password_confirmation"
-                    :rules="repasswordRules"
-                    label="パスワード(確認)"
-                    required
-                    type="password"
-                    autocomplete="no"
-                ></v-text-field>
-                <v-btn :disabled="!valid" @click="register">送信</v-btn>
-            </v-form>
-        </div>
+    <div class="main-container">
+        <h2>新規ユーザー登録</h2>
+        <v-form ref="form" v-model="valid" :lazy-validation="lazy">
+            <v-text-field
+                v-model="form.name"
+                :rules="nameRules"
+                :error="errors.name.hasError"
+                :error-messages="errors.name.message"
+                @keydown="clearError('name')"
+                label="お名前"
+                required
+                autocomplete="no"
+            ></v-text-field>
+            <v-text-field
+                v-model="form.email"
+                :rules="emailRules"
+                :error="errors.email.hasError"
+                :error-messages="errors.email.message"
+                @keydown="clearError('email')"
+                label="メールアドレス"
+                required
+                autocomplete="no"
+            ></v-text-field>
+            <v-text-field
+                v-model="form.password"
+                :rules="passwordRules"
+                :error="errors.password.hasError"
+                :error-messages="errors.password.message"
+                @keydown="clearError('password')"
+                label="パスワード"
+                required
+                type="password"
+                autocomplete="no"
+            ></v-text-field>
+            <v-text-field
+                v-model="form.password_confirmation"
+                :rules="repasswordRules"
+                label="パスワード(確認)"
+                required
+                type="password"
+                autocomplete="no"
+            ></v-text-field>
+            <v-btn :disabled="!valid" @click="register">送信</v-btn>
+        </v-form>
     </div>
 </template>
 
@@ -49,10 +56,8 @@ export default {
         },
     },
     created() {
-        alert("Register.vue");
         // 画面表示時、既にログイン済みならTODOリストへ遷移する
-        const user = this.$store.getters["auth/user"];
-        if (user !== null) {
+        if (this.$store.getters["auth/user"] !== null) {
             this.$router.push("/todo");
         }
     },
@@ -81,15 +86,38 @@ export default {
                 (v) => !!v || "パスワードの再入力を行ってください",
                 (v) => v == this.form.password || "パスワードが一致しません",
             ],
+            // エラー情報初期化
+            errors: {
+                name: { hasError: false, message: null },
+                email: { hasError: false, message: null },
+                password: { hasError: false, message: null },
+            },
         };
     },
     methods: {
+        /**
+         * 登録処理
+         */
         async register() {
-            if (!this.$refs.form.validate()) {
-                alert("入力内容を確認してください");
+            try {
+                await this.$store.dispatch("auth/register", this.form);
+                this.$router.push("/todo");
+            } catch (error) {
+                // エラーメッセージを表示
+                const errs = error.response.data.errors;
+                for (const key in errs) {
+                    this.errors[key].hasError = true;
+                    this.errors[key].message = errs[key];
+                }
             }
-            await this.$store.dispatch("auth/register", this.form);
-            this.$router.push("/todo");
+        },
+
+        /**
+         * 再入力時にエラーをクリアする
+         */
+        clearError(itemName) {
+            this.errors[itemName].hasError = false;
+            this.errors[itemName].message = null;
         },
     },
 };

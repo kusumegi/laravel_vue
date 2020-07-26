@@ -6,12 +6,18 @@
                 v-model="form.email"
                 :rules="emailRules"
                 label="E-mail"
+                :error="errors.email.hasError"
+                :error-messages="errors.email.message"
+                @keydown="clearError('email')"
                 required
                 autocomplete="email"
             ></v-text-field>
             <v-text-field
                 v-model="form.password"
                 :rules="passwordRules"
+                :error="errors.password.hasError"
+                :error-messages="errors.password.message"
+                @keydown="clearError('password')"
                 label="Password"
                 required
                 type="password"
@@ -58,6 +64,13 @@ export default {
                     "E-mailを正しく入力してください",
             ],
             passwordRules: [(v) => !!v || "パスワードを入力してください"],
+
+            // TODO:サーバー側バリデーション
+            // エラー情報初期化
+            errors: {
+                email: { hasError: false, message: null },
+                password: { hasError: false, message: null },
+            },
         };
     },
     methods: {
@@ -65,16 +78,26 @@ export default {
          * ログイン時の処理
          */
         async login() {
+            // ログイン
             try {
                 await this.$store.dispatch("auth/login", this.form);
                 this.$router.push("/todo");
             } catch (error) {
-                alert(
-                    `ログイン失敗：${JSON.stringify(
-                        error.response.data.errors
-                    )}`
-                );
+                // エラーメッセージを表示
+                const errs = error.response.data.errors;
+                for (const key in errs) {
+                    this.errors[key].hasError = true;
+                    this.errors[key].message = errs[key];
+                }
             }
+        },
+
+        /**
+         * 再入力時にエラーをクリアする
+         */
+        clearError(itemName) {
+            this.errors[itemName].hasError = false;
+            this.errors[itemName].message = null;
         },
     },
 };

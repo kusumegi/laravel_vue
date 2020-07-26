@@ -1,138 +1,105 @@
 <template>
-    <!-- <div class="main-container"> -->
     <v-container class="mx-auto">
-        <!-- タイトル -->
-        <!-- <v-row justify="center">
-            <v-col> {{ userName }}さんのTODOリスト </v-col>
-        </v-row> -->
-        <!-- 作成 -->
         <v-row justify="center">
             <v-col col="12">
-                <v-card>
-                    <v-container>
-                        <v-row>
-                            <v-col>
-                                <v-text-field
-                                    v-model="item.subject"
-                                    label="やりたいこと"
-                                    required
-                                    @keyup.enter.ctrl="newEnter"
-                                >
-                                </v-text-field>
-                            </v-col>
-                        </v-row>
+                <v-form ref="form" v-model="valid" :lazy-validation="lazy">
+                    <v-alert
+                        dense
+                        type="error"
+                        dismissible
+                        transition="scale-transition"
+                        v-show="serverError != null"
+                    >
+                        {{ serverError }}
+                    </v-alert>
+                    <v-card>
+                        <v-container>
+                            <v-row>
+                                <v-col>
+                                    <v-text-field
+                                        v-model="item.subject"
+                                        label="やりたいこと"
+                                        :rules="subjectRules"
+                                        required
+                                        @keyup.enter.ctrl="newEnter"
+                                        autocomplete="no"
+                                    >
+                                    </v-text-field>
+                                </v-col>
+                            </v-row>
 
-                        <v-row>
-                            <v-col cols="6" sm="6" md="4">
-                                <v-menu
-                                    v-model="showDatePicker"
-                                    :close-on-content-click="false"
-                                    :nudge-right="40"
-                                    transition="scale-transition"
-                                    offset-y
-                                    min-width="290px"
+                            <v-row>
+                                <v-col cols="6" sm="6" md="4">
+                                    <date-picker
+                                        ref="datePicker"
+                                        :targetDate="item.limit_at_day"
+                                        @selectDate="selectDate"
+                                    >
+                                    </date-picker>
+                                </v-col>
+                                <v-col cols="6" sm="6" md="4">
+                                    <time-picker
+                                        ref="timePicker"
+                                        :targetTime="item.limit_at_time"
+                                        @selectTime="selectTime"
+                                    >
+                                    </time-picker>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col>
+                                    <v-textarea
+                                        label="詳細"
+                                        outline
+                                        v-model="item.detail"
+                                    ></v-textarea>
+                                </v-col>
+                            </v-row>
+                            <v-row justify="center">
+                                <v-col cols="6" sm="4" md="4" offset-sm2>
+                                    <v-btn
+                                        class="btn"
+                                        block
+                                        color="secondary"
+                                        @click="clear"
+                                        >クリア</v-btn
+                                    ></v-col
                                 >
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-text-field
-                                            v-model="item.limit_at_day"
-                                            label="締切日"
-                                            append-icon="event"
-                                            readonly
-                                            v-bind="attrs"
-                                            v-on="on"
-                                            ref="limit_day"
-                                        ></v-text-field>
-                                    </template>
-                                    <v-date-picker
-                                        v-model="item.limit_at_day"
-                                        locale="jp-ja"
-                                        :day-format="
-                                            (date) => new Date(date).getDate()
-                                        "
-                                        @input="showDatePicker = false"
-                                    ></v-date-picker>
-                                </v-menu>
-                            </v-col>
-                            <v-col cols="6" sm="6" md="4">
-                                <v-menu
-                                    ref="timePicker"
-                                    v-model="showTimePicker"
-                                    :close-on-content-click="false"
-                                    :nudge-right="40"
-                                    :return-value.sync="time"
-                                    transition="scale-transition"
-                                    offset-y
-                                    max-width="290px"
-                                    min-width="290px"
+                                <v-col
+                                    cols="6"
+                                    sm="4"
+                                    md="4"
+                                    v-show="!isUpdate"
                                 >
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-text-field
-                                            v-model="item.limit_at_time"
-                                            label="時刻"
-                                            append-icon="access_time"
-                                            readonly
-                                            v-bind="attrs"
-                                            v-on="on"
-                                        ></v-text-field>
-                                    </template>
-                                    <v-time-picker
-                                        v-if="showTimePicker"
-                                        v-model="item.limit_at_time"
-                                        full-width
-                                        @click:minute="
-                                            $refs.timePicker.save(time)
-                                        "
-                                        @input="menu2 = false"
-                                    ></v-time-picker>
-                                </v-menu>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col>
-                                <v-textarea
-                                    label="詳細"
-                                    outline
-                                    v-model="item.detail"
-                                ></v-textarea>
-                            </v-col>
-                        </v-row>
-                        <v-row justify="center">
-                            <v-col cols="6" sm="4" md="4" offset-sm2>
-                                <v-btn
-                                    class="btn"
-                                    block
-                                    color="secondary"
-                                    @click="clear"
-                                    >クリア</v-btn
-                                ></v-col
-                            >
-                            <v-col cols="6" sm="4" md="4" v-show="!isUpdate">
-                                <v-btn
-                                    class="btn"
-                                    block
-                                    color="primary"
-                                    @click="create"
-                                    >追加</v-btn
-                                >
-                            </v-col>
-                            <v-col cols="6" sm="4" md="4" v-show="isUpdate">
-                                <v-btn
-                                    class="btn"
-                                    block
-                                    color="success"
-                                    @click="update(item)"
-                                    >更新</v-btn
-                                >
-                            </v-col>
-                        </v-row>
-                    </v-container>
-                </v-card>
+                                    <v-btn
+                                        class="btn"
+                                        block
+                                        color="primary"
+                                        :disabled="!valid"
+                                        @click="create"
+                                        >追加</v-btn
+                                    >
+                                </v-col>
+                                <v-col cols="6" sm="4" md="4" v-show="isUpdate">
+                                    <v-btn
+                                        class="btn"
+                                        block
+                                        color="success"
+                                        :disabled="!valid"
+                                        @click="update(item)"
+                                        >更新</v-btn
+                                    >
+                                </v-col>
+                            </v-row>
+                        </v-container>
+                    </v-card>
+                </v-form>
             </v-col>
         </v-row>
         <!-- リストコントロール部 -->
         <v-row justify="end" align="center">
             <!-- <v-col cols="6" sm="4" md="3" lg="2"> -->
-            <v-col>
+            <v-col col="5" sm="5" md="3">
                 <v-switch
                     v-model="showDoneTodo"
                     label="完了した項目を表示"
@@ -162,16 +129,21 @@
             </v-col>
         </v-row>
     </v-container>
-    <!-- </div> -->
 </template>
 
 <script>
 import axios from "axios";
 import moment from "moment";
 import TodoListGroup from "../components/TodoListGroup";
+import DatePicker from "../components/DatePicker";
+import TimePicker from "../components/TimePicker";
 
 export default {
-    components: { TodoListGroup },
+    components: {
+        TodoListGroup,
+        DatePicker,
+        TimePicker,
+    },
     metaInfo: {
         title: "TODOリスト",
         htmlAttrs: {
@@ -180,23 +152,15 @@ export default {
     },
     data() {
         return {
+            valid: true,
             userName: "",
-            date: new Date().toISOString().substr(0, 10),
-            time: null,
-            showDatePicker: false,
-            showTimePicker: false,
             isUpdate: false,
             showDoneTodo: false,
-            // sortItems: [
-            //     { column: "limit_at", sort: "desc", text: "期日順(未来)" },
-            //     { column: "limit_at", sort: "asc", text: "期日順(過去)" },
-            //     { column: "created_at", sort: "desc", text: "作成順(新しい)" },
-            //     { column: "created_at", sort: "asc", text: "作成順(古い)" },
-            // ],
-            // sortMode: "期日順",
             item: {},
             allItems: [],
             itemGroups: [],
+            subjectRules: [(v) => !!v || "やりたいことを入力してください"],
+            serverError: null,
         };
     },
     watch: {},
@@ -225,16 +189,20 @@ export default {
          * リスト取得(select)
          */
         async getList() {
-            const res = await axios.get("/api/todo");
-            this.allItems = res.data;
+            try {
+                const res = await axios.get("/api/todo");
+                this.allItems = res.data;
 
-            // 表示用データを保持する
-            for (const item of this.allItems) {
-                this.createDispInfo(item);
+                // 表示用データを保持する
+                for (const item of this.allItems) {
+                    this.createDispInfo(item);
+                }
+
+                // グループごとの項目リストを作成する
+                this.createItemList();
+            } catch (error) {
+                this.serverError = "項目取得時にエラーが発生しました。";
             }
-
-            // グループごとの項目リストを作成する
-            this.createItemList();
         },
 
         /**
@@ -242,42 +210,53 @@ export default {
          */
         async create() {
             // 締切日時を設定する
-            this.item.limit_at = this.getDate(
-                this.item.limit_at_day,
-                this.item.limit_at_time
-            );
+            try {
+                this.item.limit_at = this.getDate(
+                    this.item.limit_at_day,
+                    this.item.limit_at_time
+                );
 
-            // 登録
-            const res = await axios.post("/api/todo", this.item);
+                // 登録
+                const res = await axios.post("/api/todo", this.item);
 
-            // リスト再構築
-            this.createDispInfo(res.data);
-            this.allItems.push(res.data);
-            this.createItemList();
+                // リスト再構築
+                this.createDispInfo(res.data);
+                this.allItems.push(res.data);
+                this.createItemList();
 
-            // 入力項目をクリア
-            this.clear();
+                // 入力項目をクリア
+                this.clear();
+            } catch (error) {
+                this.serverError = "項目追加時にエラーが発生しました。";
+            }
         },
 
         /**
          * 更新処理(update)
          */
         async update(targetItem) {
-            // 締切日時を設定する
-            targetItem.limit_at = this.getDate(
-                targetItem.limit_at_day,
-                targetItem.limit_at_time
-            );
+            try {
+                // 締切日時を設定する
+                targetItem.limit_at = this.getDate(
+                    targetItem.limit_at_day,
+                    targetItem.limit_at_time
+                );
 
-            // 完了日時を設定する
-            targetItem.complete_at = targetItem.checked ? new moment() : null;
+                // 完了日時を設定する
+                targetItem.complete_at = targetItem.checked
+                    ? new moment()
+                    : null;
 
-            // 更新処理
-            await axios.put(`/api/todo/${targetItem.id}`, targetItem);
+                // 更新処理
+                await axios.put(`/api/todo/${targetItem.id}`, targetItem);
 
-            // グループごとの項目リストを作成する
-            this.createItemList();
-            this.clear();
+                // グループごとの項目リストを再生成する
+                this.createDispInfo(targetItem);
+                this.createItemList();
+                this.clear();
+            } catch (error) {
+                this.serverError = "項目更新時にエラーが発生しました。";
+            }
         },
 
         /**
@@ -311,6 +290,9 @@ export default {
             });
         },
 
+        /**
+         * 1件分の表示データを生成する
+         */
         createDispInfo(item) {
             if (item.limit_at != null) {
                 const now = moment();
@@ -374,19 +356,41 @@ export default {
         /**
          * エンターキー押下時にunfocusする
          */
-        unforcus() {
-            if (event.keyCode !== 13) {
-                return;
-            }
-            document.activeElement.blur();
-        },
+        // unforcus() {
+        //     if (event.keyCode !== 13) {
+        //         return;
+        //     }
+        //     document.activeElement.blur();
+        // },
 
         /**
-         * 編集対象として選択
+         * リスト項目を編集対象として選択
          */
         edit(currItem) {
             this.item = currItem;
             this.isUpdate = true;
+        },
+
+        /**
+         * 日付選択時の処理
+         */
+        selectDate(targetDate) {
+            this.item.limit_at_day = targetDate;
+        },
+
+        /**
+         * 時刻選択時の処理
+         */
+        selectTime(targetTime) {
+            this.item.limit_at_time = targetTime;
+        },
+
+        /**
+         * 再入力時にエラーをクリアする
+         */
+        clearError(itemName) {
+            this.errors[itemName].hasError = false;
+            this.errors[itemName].message = null;
         },
     },
 };

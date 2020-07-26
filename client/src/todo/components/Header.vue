@@ -9,10 +9,20 @@
             <v-spacer></v-spacer>
 
             <v-toolbar-items>
-                <v-btn icon to="/register" v-show="username == null">
+                <v-btn
+                    icon
+                    to="/register"
+                    v-show="username == null"
+                    active-class="currPage"
+                >
                     <v-icon>person_add</v-icon>
                 </v-btn>
-                <v-btn icon to="/login" v-show="username == null">
+                <v-btn
+                    icon
+                    to="/login"
+                    v-show="username == null"
+                    active-class="currPage"
+                >
                     <v-icon>login</v-icon>
                 </v-btn>
                 <v-btn icon @click="logout" v-show="username != null">
@@ -36,12 +46,14 @@ export default {
          * ログアウト処理
          */
         async logout() {
-            alert("logout:1");
             await this.$store.dispatch("auth/logout");
-            alert("logout:2");
             this.$router.push("/login");
-            alert("logout:3");
         },
     },
 };
 </script>
+<style scoped>
+.currPage {
+    display: none;
+}
+</style>

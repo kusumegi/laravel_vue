@@ -11,6 +11,7 @@ const routes = [
         path: "/login",
         name: "Login",
         component: Login,
+        alias: "/",
     },
     {
         path: "/register",
@@ -28,7 +29,6 @@ const router = new VueRouter({
     mode: "history",
     //   base: process.env.BASE_URL,
     base: "/todo/",
-    // base: "/",
     routes,
 });
 
