@@ -50,8 +50,6 @@ class RegisterController extends Controller
      */
     protected function validator(array $data)
     {
-        // TODO:kusumegi:
-        logger()->info('RegisterController->validator');
         $validator = Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
@@ -60,14 +58,7 @@ class RegisterController extends Controller
 
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
-            // TODO:kusumegi:debug
-            foreach ($errors as $err) {
-                logger()->error($err);
-            }
-            logger()->info('バリデーションエラー');
-            // redirect()->back()->withErrors($validator)->withInput();
         }
-        // TODO
         return $validator;
     }
 
