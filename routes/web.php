@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,7 +15,18 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    logger()->info('ルートにアクセス');
+    // return view('welcome');
+    return redirect('/todo');
 });
 
+// テンプレート用のシンプルなアプリ
 Route::get('/app1{any}', 'SpaController@app1')->where('any', '(/?$|/.*)');
+
+// TODOリスト
+Route::get('/todo{any}', 'SpaController@todo')->where('any', '(/?$|/.*)');
+
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
