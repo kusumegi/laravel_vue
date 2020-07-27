@@ -65,7 +65,6 @@ export default {
             ],
             passwordRules: [(v) => !!v || "パスワードを入力してください"],
 
-            // TODO:サーバー側バリデーション
             // エラー情報初期化
             errors: {
                 email: { hasError: false, message: null },
