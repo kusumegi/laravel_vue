@@ -125,6 +125,7 @@
                     :showDoneTodo="showDoneTodo"
                     @edit="edit"
                     @update="update"
+                    @deleteItem="deleteItem"
                 ></todo-list-group>
             </v-col>
         </v-row>
@@ -256,6 +257,27 @@ export default {
                 this.clear();
             } catch (error) {
                 this.serverError = "項目更新時にエラーが発生しました。";
+            }
+        },
+
+        /**
+         * 削除(delete)
+         */
+        async deleteItem(targetItem) {
+            try {
+                // 削除処理
+                await axios.delete(`/api/todo/${targetItem.id}`);
+
+                // 画面から削除
+                this.allItems = this.allItems.filter((item) => {
+                    return item.id != targetItem.id;
+                });
+
+                // グループごとの項目リストを再生成する
+                this.createItemList();
+                this.clear();
+            } catch (error) {
+                this.serverError = "項目削除時にエラーが発生しました。";
             }
         },
 

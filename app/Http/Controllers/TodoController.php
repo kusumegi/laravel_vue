@@ -122,11 +122,7 @@ class TodoController extends Controller
      */
     public function destroy($id)
     {
-        //
-        logger()->info('TodoController->destroy()');
-        // Todo::find($id)->delete();
-        $count = Todo::destroy($id);
-        logger()->debug('削除件数：' . $count);
+        Todo::destroy($id);
         return response('', 200);
     }
 }

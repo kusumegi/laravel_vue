@@ -6,37 +6,48 @@
             <v-toolbar-title>{{ title }}</v-toolbar-title>
         </v-toolbar>
         <v-list subheader two-line flat>
-            <v-list-item
-                v-for="(item, index) in sortedList"
-                :key="index"
-                v-show="showDoneTodo || !item.checked"
-                v-bind:class="classObj(item)"
-            >
-                <template>
-                    <v-list-item-action>
-                        <v-checkbox
-                            color="primary"
-                            :input-value="item.checked"
-                            @change="toggleCheck(item, index)"
-                        ></v-checkbox>
-                    </v-list-item-action>
+            <v-list-item-group>
+                <v-list-item
+                    v-for="(item, index) in sortedList"
+                    :key="index"
+                    v-show="showDoneTodo || !item.checked"
+                    v-bind:class="classObj(item)"
+                >
+                    <template>
+                        <v-list-item-action>
+                            <v-checkbox
+                                color="primary"
+                                :input-value="item.checked"
+                                @change="toggleCheck(item, index)"
+                            ></v-checkbox>
+                        </v-list-item-action>
 
-                    <v-list-item-content @click="edit(item)" class="text-left">
-                        <v-list-item-title>{{
-                            item.subject
-                        }}</v-list-item-title>
-                        <v-list-item-subtitle
-                            ><span v-show="item.limit_at != null">
-                                期限[{{ item.limit_at_day }}
-                                {{ item.limit_at_time }}]
-                            </span>
-                            <span v-show="item.detail != null">
-                                {{ item.detail }}
-                            </span></v-list-item-subtitle
+                        <v-list-item-content
+                            @click="edit(item)"
+                            class="text-left"
                         >
-                    </v-list-item-content>
-                </template>
-            </v-list-item>
+                            <v-list-item-title>{{
+                                item.subject
+                            }}</v-list-item-title>
+                            <v-list-item-subtitle
+                                ><span v-show="item.limit_at != null">
+                                    期限[{{ item.limit_at_day }}
+                                    {{ item.limit_at_time }}]
+                                </span>
+                                <span v-show="item.detail != null">
+                                    {{ item.detail }}
+                                </span></v-list-item-subtitle
+                            >
+                        </v-list-item-content>
+
+                        <v-list-item-action>
+                            <v-btn color="error" @click="deleteItem(item)"
+                                >削除</v-btn
+                            >
+                        </v-list-item-action>
+                    </template>
+                </v-list-item>
+            </v-list-item-group>
         </v-list>
     </v-card>
 </template>
@@ -124,6 +135,14 @@ export default {
         edit(currItem) {
             // 親コンポーネントに伝達
             this.$emit("edit", currItem);
+        },
+
+        /**
+         * 削除
+         */
+        deleteItem(currItem) {
+            // 親コンポーネントに伝達
+            this.$emit("deleteItem", currItem);
         },
 
         /**
